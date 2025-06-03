@@ -1,0 +1,10 @@
+name: actions-kadai4
+on: [push]
+jobs:
+ check-bats-version:
+  runs-on: ubuntu-latest
+  steps:
+   - run: echo "最小公約数計算シェルスクリプトのテスト！"
+   - run: ./gcd-test.sh
+
+
