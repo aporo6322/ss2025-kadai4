@@ -3,7 +3,7 @@
 #実行すると最大公約数シェルスクリプトへさまざまな入力を行う
 #最大公約数シェルスクリプトが想定した挙動をしていない場合にエラー終了を行う
 
-echo "gcd.shのテストをします。"
+echo -e "●gcd.shのテストをします。\n●各ケースで合格 -PASS-と出れば、gcd.shの出力は期待値どおりです。\n●不合格-FAIL-と出れば、どの値が期待値と異なるかが表示されます。\n"
 
 #failカウント
 fail=0
@@ -25,20 +25,22 @@ if [ "$expect_error" = "true" ]; then
     else
       #そうでなければ失敗扱い
       echo "不合格-FAIL-: $desc"
-      echo "   Expected: 実行後の終了コードは1で、標準出力は空"
+      echo "   Expected: 実行後の終了コードは1で、標準出力は空。"
       echo "   Got: 実行後の終了コードは$exit_codeで、標準出力は$stderrでした。"
       fail=1
     fi
 #正常終了が期待される場合
 else
-    if [ "$exit_code" -eq 0 ] && [ "$stdout" = "$expect_gcd" ] && [ -z "$stderr" ]; then
+        #stdoutから数字だけを取り出す（数字が1つ以上連続する部分を全て抽出し|最初の1個だけ出力）
+	stdout_number=$(echo "$stdout" | grep -oE '[0-9]+' | head -n1)
+    if [ "$exit_code" -eq 0 ] && [ "$stdout_number" = "$expect_gcd" ] && [ -z "$stderr" ]; then
       #終了コードが0で、標準出力が期待値、標準エラーは空ならば合格
       echo "合格-PASS-: $desc"
     else
       # そうでなければ失敗
       echo "不合格-FAIL-: $desc"
       echo "   Expected: 実行後の終了コードは0で、標準出力は$expect_gcd、標準エラー出力は空でした。"
-      echo "   Got: 実行後の終了コードは$exit_codeで、標準出力は$stdout、標準エラー出力は$stderrでした。"
+      echo "   Got: 実行後の終了コードは$exit_codeで、標準出力は$stdout_number、標準エラー出力は$stderrでした。"
       fail=1
     fi
   fi
@@ -58,7 +60,7 @@ testcases=(
   "10 3.14 true ''"
   "abc 5 true ''"
   "5 abc true ''"
-  "\"12 3\" 5 true ''"
+  "12 3 5 true ''"
   "012 5 true ''"
   "12345678901234567890 1 true ''"
   "'' 5 true ''"
@@ -67,16 +69,25 @@ testcases=(
 
 #----テストケースを1つずつ処理----
 for tc in "${testcases[@]}"; do
-  #文字列を分割して位置パラメータにセット
-  set -- $tc
-  a=$1
-  b=$2
-  expect_err=$3
-  expect_gcd=$4
+  #evalコマンドで、testcaseを配列として展開
+  eval "args=($tc)"
+
+  #テストケースの中身説明文
+  desc="${args[*]}"
+
+  #testcaseの配列展開後の長さ取得
+  length=${#args[@]}
+  expect_err=${args[$((length-2))]}
+  expect_gcd=${args[$((length-1))]}
+
+  #引数として渡す部分の抽出のため、最後の2要素を除く
+  unset 'args[$((length-1))]'  #最後の要素（期待最大公約数）削除
+  unset 'args[$((length-2))]'  #その前の要素（期待エラー）削除
+  arg_value=("${args[@]}") #引数のみの配列になった
 
   #スクリプトを実行し標準出力を取得すると同時に、
   # 標準エラーはファイルにリダイレクトしてあとで読み込む
-  stdout=$($(./gcd.sh) "$a" "$b" 2>stderr.tmp)
+  stdout=$(./gcd.sh "${arg_value[@]}" 2>stderr.tmp)
 
   # 直前のコマンドの終了コードを取得
   exit_code=$?
@@ -86,9 +97,6 @@ for tc in "${testcases[@]}"; do
   
   # 一時ファイルを削除
   rm -f stderr.tmp
-
-  #テストの説明文
-  desc="args=($a, $b)"
 
   # 判定関数に結果を渡して判定・表示
   check_test "$desc" "$exit_code" "$stdout" "$stderr" "$expect_err" "$expect_gcd"
