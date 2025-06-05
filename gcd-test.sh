@@ -77,10 +77,12 @@ for tc in "${testcases[@]}"; do
 
   #testcaseの配列展開後の長さ取得
   length=${#args[@]}
+  
   expect_err=${args[$((length-2))]}
   expect_gcd=${args[$((length-1))]}
 
   #引数として渡す部分の抽出のため、最後の2要素を除く
+  #引数部分を抽出しないと、引数の個数が正しいかの判定ができないから。
   unset 'args[$((length-1))]'  #最後の要素（期待最大公約数）削除
   unset 'args[$((length-2))]'  #その前の要素（期待エラー）削除
   arg_value=("${args[@]}") #引数のみの配列になった
