@@ -4,6 +4,7 @@ jobs:
  check-bats-version:
   runs-on: ubuntu-latest
   steps:
+   - uses: actions/checkout@v4
    - run: echo "最小公約数計算シェルスクリプトのテスト！"
    - run: ./gcd-test.sh
 
