@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#実行すると最大公約数シェルスクリプトへさまざまな入力を行う
-#最大公約数シェルスクリプトが想定した挙動をしていない場合にエラー終了を行う
-
 echo -e "●gcd.shのテストをします。\n●各ケースで合格 -PASS-と出れば、gcd.shの出力は期待値どおりです。\n●不合格-FAIL-と出れば、どの値が期待値と異なるかが表示されます。\n"
 
 #failカウント
@@ -26,9 +23,10 @@ if [ "$expect_error" = "true" ]; then
       #そうでなければ失敗扱い
       echo "不合格-FAIL-: $desc"
       echo "   Expected: 実行後の終了コードは1で、標準出力は空。"
-      echo "   Got: 実行後の終了コードは$exit_codeで、標準出力は$stderrでした。"
+      echo "   Got: 実行後の終了コードは「$exit_code」で、標準出力は「$stderr」。"
       fail=1
     fi
+
 #正常終了が期待される場合
 else
         #stdoutから数字だけを取り出す（数字が1つ以上連続する部分を全て抽出し|最初の1個だけ出力）
@@ -39,8 +37,8 @@ else
     else
       # そうでなければ失敗
       echo "不合格-FAIL-: $desc"
-      echo "   Expected: 実行後の終了コードは0で、標準出力は$expect_gcd、標準エラー出力は空でした。"
-      echo "   Got: 実行後の終了コードは$exit_codeで、標準出力は$stdout_number、標準エラー出力は$stderrでした。"
+      echo "   Expected: 実行後の終了コードは0で、標準出力は「$expect_gcd」、標準エラー出力は空でした。"
+      echo "   Got: 実行後の終了コードは「$exit_code」で、標準出力は「$stdout_number」、標準エラー出力は「$stderr」でした。"
       fail=1
     fi
   fi
